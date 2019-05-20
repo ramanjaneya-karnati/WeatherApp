@@ -7,6 +7,11 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import Button from "@material-ui/core/Button";
+import ErrorModal from './ErrorModal'
+import Typography from "@material-ui/core/Typography";
+import {withStyles} from '@material-ui/core/styles';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import './App.css'
 
 const mapStyles = {
     width: '100%',
@@ -14,17 +19,25 @@ const mapStyles = {
 };
 
 class MapContainer extends Component {
-    state = {
-        maxWidth: 'sm'
-    };
+    constructor() {
+        super();
+        this.state = {
+            maxWidth: 'sm',
+            ErrorModalOpen: false
+        };
+    }
 
 
     handleClose = () => {
         actions.changeValue({open: false});
     };
+    closeModal = () => {
+        this.setState({ErrorModalOpen: false})
+        actions.changeValue({isErrorModal: false})
+    };
     mapClicked = (mapProps, map, clickEvent, marker) => {
 
-
+        actions.changeValue({isDataLoading:true});
         const lat = clickEvent.latLng.lat().toFixed(3);
         const lng = clickEvent.latLng.lng().toFixed(3);
         if (lat && lng !== null) {
@@ -38,6 +51,11 @@ class MapContainer extends Component {
         }
     };
 
+    componentWillReceiveProps(props) {
+        if (props.isErrorModal != this.state.ErrorModalOpen)
+            this.setState({ErrorModalOpen: props.isErrorModal})
+    }
+
     render() {
         let d = new Date();
         let weekday = new Array(7);
@@ -50,7 +68,7 @@ class MapContainer extends Component {
         weekday[6] = "Saturday";
 
         let currentDay = weekday[d.getDay()];
-        const {WeatherData, open, getCityName, getCountryNameCode} = this.props;
+        const {WeatherData, open, getCityName, getCountryNameCode, isDataLoading} = this.props;
         console.log("THIS PROPS", this.props);
         return (
             <Fragment>
@@ -71,6 +89,7 @@ class MapContainer extends Component {
                 >
 
                 </Map>
+
                 {open == true && (
                     <Dialog
                         fullWidth={true}
@@ -79,22 +98,48 @@ class MapContainer extends Component {
                         onClose={this.handleClose}
                         aria-labelledby="form-dialog-title"
                     >
-                        <DialogTitle id="form-dialog-title">{getCityName}, {getCountryNameCode}</DialogTitle>
+                        <DialogTitle id="form-dialog-title">
+                            <Typography variant="h5" component="h2">
+                                {getCityName}, {getCountryNameCode}
+                            </Typography>
+                        </DialogTitle>
                         <DialogContent>
-                            <DialogContentText >
-                                <p>{currentDay}</p>
-                                <p>{WeatherData.currently.summary}</p>
-                                <h1>{WeatherData.currently.temperature} Fº</h1>
-                            </DialogContentText>
+                            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+                                {currentDay} Weather Forecasting
+                            </Typography>
+                            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+                                {WeatherData.currently.summary}</Typography>
+                            <Typography variant="h5" component="h2">
+                                Temperature: {WeatherData.currently.temperature} Fº
+                            </Typography>
+                            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+                                humidity: {WeatherData.currently.humidity}</Typography>
+                            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+                                precipIntensity: {WeatherData.currently.precipIntensity}</Typography>
+                            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+                                UV: {WeatherData.currently.uvIndex}</Typography>
+                            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+                                Wind speed: {WeatherData.currently.windSpeed}</Typography>
+
+                            <Typography style={{fontSize: 14}} color="textSecondary" gutterBottom>
+                                {WeatherData.daily.summary}</Typography>
+
                         </DialogContent>
                         <DialogActions>
                             <Button onClick={this.handleClose} color="primary">
-                                Cancel
+                                Close
                             </Button>
 
                         </DialogActions>
                     </Dialog>)}
-
+                <ErrorModal
+                    openModal={this.state.ErrorModalOpen}
+                    closeHandler={this.closeModal}
+                />
+                {isDataLoading == true && (
+                    <div className="overlay-spinner">
+                        <CircularProgress className="AppLoader"/>
+                    </div>)}
             </Fragment>
         );
     }

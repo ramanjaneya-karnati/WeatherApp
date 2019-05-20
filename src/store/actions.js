@@ -37,8 +37,7 @@ const actionsCreators = {
                             return response.json();
                         })
                         .then(resData => {
-                            console.log("COUNTRY CAPITAL", resData[0].capital);
-                            actions.changeValue({getCityName:resData[0].capital})
+                            actions.changeValue({getCityName: resData[0].capital})
                             if (resData[0].capital !== null) {
                                 const CITYLATLNG = `https://maps.googleapis.com/maps/api/geocode/json?address=${resData[0].capital}&key=AIzaSyCATdmw8Riy4SSzZkJSvr6Ku4WNHDHIr8g`
                                 fetch(CITYLATLNG)
@@ -46,35 +45,45 @@ const actionsCreators = {
                                         return response.json();
                                     })
                                     .then(resData => {
-                                        const BACKEND_URL = process.env.BACKEND_URL;
-                                        console.log("CITY COORDINATES", resData.results[0].geometry.location);
                                         const weatherData = `http://localhost:8080/weather/api/fetch-weather?lat=${resData.results[0].geometry.location.lat}&long=${resData.results[0].geometry.location.lng}`
                                         if (resData.results[0].geometry.location !== null) {
-                                            fetch(weatherData)
-                                                .then(response => {
-                                                    return response.json();
-                                                })
-                                                .then(resDataWeather => {
-                                                    console.log("ACTIONS", actions);
-                                                    console.log("API DATA", resDataWeather);
-                                                    if (resDataWeather.status  == "SUCCESS") {
-                                                        actions.changeValue({ WeatherData: resDataWeather.data, open:true})
+                                            if (weatherData) {
+                                                fetch(weatherData)
+                                                    .then(response => {
+                                                        return response.json();
+                                                    })
+                                                    .then(resDataWeather => {
 
-                                                    } else {
-                                                        actions.changeValue({ErrorModalOpen: true})
+                                                        if (resDataWeather.status == "SUCCESS") {
+                                                            actions.changeValue({
+                                                                isDataLoading:false,
+                                                                WeatherData: resDataWeather.data,
+                                                                open: true
+                                                            })
 
-                                                    }
-                                                })
+                                                        } else {
+                                                            actions.changeValue({ isDataLoading:false, ErrorModalOpen: true})
 
+                                                        }
+                                                    })
+                                                    .catch(err => {
+                                                        actions.changeValue({ isDataLoading:false, isErrorModal: true})
+                                                    });
+                                            } else {
+                                                actions.changeValue({ isDataLoading:false, isErrorModal: true})
+                                            }
 
                                         }
-                                    });
+                                    })
+                                    .catch(err =>
+                                        actions.changeValue({ isDataLoading:false, isErrorModal: true})
+                                    );
                             }
                         })
                 }
             })
             .catch(err =>
-                actions.changeValue({ErrorModalOpen: true, isLoading: false})
+                actions.changeValue({ isDataLoading:false, isErrorModal: true})
             );
         return {}
 

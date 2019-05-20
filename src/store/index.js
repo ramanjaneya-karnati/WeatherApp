@@ -10,6 +10,8 @@ const config = {
         WeatherData: {},
         isLoading: true,
         open:false,
+        isErrorModal:false,
+        isDataLoading:false
 
     },
     actionsCreators
