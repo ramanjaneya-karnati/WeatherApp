@@ -1,5 +1,5 @@
 export const KEYS = {
-    GOOGLE_API_KEY:'AIzaSyCATdmw8Riy4SSzZkJSvr6Ku4WNHDHIr8g'
+    GOOGLE_API_KEY:'<Google Api Key>'
 };
 
 export {
