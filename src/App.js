@@ -146,6 +146,6 @@ class MapContainer extends Component {
 }
 
 export default GoogleApiWrapper({
-    apiKey: 'AIzaSyCATdmw8Riy4SSzZkJSvr6Ku4WNHDHIr8g',
+    apiKey: '<Google Api Key>',
 })(connect(state => ({...state}))(MapContainer));
 
